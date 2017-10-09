@@ -8,6 +8,8 @@
 #include "util.h"
 #include <vector>
 #include <iostream>
+#include <random>
+#include <sstream>
 #include <multiverso/barrier.h>
 #include <multiverso/log.h>
 #include <multiverso/row.h>
@@ -102,6 +104,48 @@ namespace multiverso { namespace lightlda
             Multiverso::EndConfig();
         }
 
+        
+        /*
+         * Read in a matrix from a model file with lines in the format:
+         * 300 0:41 2:11 3:9
+         * (This means: for document or word 300, topic 0 has a value of 41,
+         * topic 2 has a value of 11, topic 3 has a value of 9. If a value
+         * is not stated, it is 0.)
+         */
+        static std::vector<std::vector<double>> parseModelFile(std::string filename, int numTopics, int numWords)
+        {
+            std::string line;
+            std::ifstream file(filename);
+            std::vector < std::vector<double> > data (numWords);
+            
+            // Go through file line-by-line 
+            while (std::getline(file, line))
+            {
+                std::vector<double> row(numTopics);
+                std::stringstream lineStream(line);
+                
+                // Determine the wordi or document number
+                std::string wordIndex;
+                std::getline(lineStream, wordIndex, ' ');
+                std::string topicString;
+		
+                // For each topic, read in the value and populate the appropriate element of the matrixi
+                while (std::getline(lineStream, topicString, ' '))
+                {
+                    std::stringstream topicStream(topicString);
+                    std::string topicIndex;
+                    std::string val;
+                    std::getline(topicStream, topicIndex, ':');
+                    std::getline(topicStream, val, ':');
+
+                    if (!val.empty())
+                        row[std::stoi(topicIndex)] = std::stod(val);
+                }
+                data[std::stoi(wordIndex)] = row;
+            }
+            return data;
+        }
+           
         static void Initialize()
         {
             xorshift_rng rng;
@@ -112,6 +156,19 @@ namespace multiverso { namespace lightlda
                 int32_t num_slice = meta.local_vocab(block).num_slice();
                 for (int32_t slice = 0; slice < num_slice; ++slice)
                 {
+                    std::vector<std::vector<double>> word_topic_probs;
+                    std::vector<std::vector<double>> doc_topic_probs;
+                    if (Config::warm_start)
+                    {
+                        std::cout << "Warm start" << std::endl;
+                        // Each column is a topic, each row contains the probability of each word given that topic
+                        word_topic_probs = LightLDA::parseModelFile("server_0_table_0.model", Config::num_topics, Config::num_vocabs);
+                        // Each column is a document, each row contains the probability of each topic given that document
+                        doc_topic_probs = LightLDA::parseModelFile("doc_topic.0", Config::num_topics, Config::max_num_document);
+                    }
+                    std::random_device rd;
+                    std::mt19937 gen(rd());
+                
                     for (int32_t i = 0; i < data_block.Size(); ++i)
                     {
                         Document* doc = data_block.GetOneDoc(i);
@@ -123,7 +180,32 @@ namespace multiverso { namespace lightlda
                             if (doc->Word(cursor) > last_word) break;
                             // Init the latent variable
                             if (!Config::warm_start)
+                            {
                                 doc->SetTopic(cursor, rng.rand_k(Config::num_topics));
+                            }
+			                else {
+                                int32_t word = doc->Word(cursor);
+                                std::vector<double> topic_probs;
+                                // Use doc-topic and word-topic probabilities to calculate the
+                                // initial probabilities for each topic.
+                                // P(topic | word, doc) is proportional to  P(topic, word | doc)
+                                // ~= P(topic | doc) * P(word | topic)
+                                double sum = 0.0;
+                                for (int32_t t = 0; t < Config::num_topics; ++t)
+                                {
+                                    double unnormalized_prob = doc_topic_probs[i][t] * word_topic_probs[word][t];
+                                    topic_probs.push_back(unnormalized_prob);
+                                    sum += unnormalized_prob;
+                                }
+                                for (int32_t t = 0; t < Config::num_topics; ++t)
+                                {
+                                    topic_probs[t] = topic_probs[t] / sum;
+                                }
+				                // Sample the word's topic from its topic distribution
+                                std::discrete_distribution<> d(topic_probs.begin(), topic_probs.end());
+                                int topic = d(gen);
+                                doc->SetTopic(cursor, topic);
+                            }                        
                             // Init the server table
                             Multiverso::AddToServer<int32_t>(kWordTopicTable,
                                 doc->Word(cursor), doc->Topic(cursor), 1);
@@ -233,5 +315,4 @@ namespace multiverso { namespace lightlda
 int main(int argc, char** argv)
 {
     multiverso::lightlda::LightLDA::Run(argc, argv);
-    return 0;
 }
