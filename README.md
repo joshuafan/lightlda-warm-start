@@ -2,8 +2,10 @@ Note: this is a modification of Microsoft's LightLDA implementation to support w
 
 See https://github.com/Microsoft/multiverso/wiki/LightLDA and the bottom of https://docs.google.com/document/d/14DlqLjbtiFZ98HegWcrUIzvBzPemfOu-miEHeBqpDJY/edit for installation instructions.
 
+Official documentation below.
 
-#LightLDA
+
+# LightLDA
 
 LightLDA is a distributed system for large scale topic modeling. It implements a distributed sampler that enables very large data sizes and models. LightLDA improves sampling throughput and convergence speed via a fast O(1) metropolis-Hastings algorithm, and allows small cluster to tackle very large data and model sizes through model scheduling and data parallelism architecture. LightLDA is implemented with C++ for performance consideration.
 
