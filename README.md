@@ -1,3 +1,8 @@
+Note: this is a modification of Microsoft's LightLDA implementation to support warm-start. Everything is the same, except for the initialization code in src/lightlda.cpp: if the command-line flag "warm_start" was set, we generate the initial topic probability distribution from the model and doc-topic files, instead of initializing them randomly.
+
+See https://github.com/Microsoft/multiverso/wiki/LightLDA and the bottom of https://docs.google.com/document/d/14DlqLjbtiFZ98HegWcrUIzvBzPemfOu-miEHeBqpDJY/edit for installation instructions.
+
+
 #LightLDA
 
 LightLDA is a distributed system for large scale topic modeling. It implements a distributed sampler that enables very large data sizes and models. LightLDA improves sampling throughput and convergence speed via a fast O(1) metropolis-Hastings algorithm, and allows small cluster to tackle very large data and model sizes through model scheduling and data parallelism architecture. LightLDA is implemented with C++ for performance consideration.
