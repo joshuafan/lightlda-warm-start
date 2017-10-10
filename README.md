@@ -1,4 +1,6 @@
-Note: this is a modification of Microsoft's LightLDA implementation to support warm-start. Everything is the same, except for the initialization code in src/lightlda.cpp: if the command-line flag "warm_start" was set, we generate the initial topic probability distribution from the model and doc-topic files, instead of initializing them randomly.
+# LightLDA with warm start
+
+Note: this is a modification of Microsoft's LightLDA implementation to support warm-start. Everything is the same, except for the initialization code in src/lightlda.cpp: if the command-line flag "warm_start" was set, we generate each token's topic probability distribution from the model and doc-topic files, instead of initializing each token's topic randomly.
 
 See https://github.com/Microsoft/multiverso/wiki/LightLDA and the bottom of https://docs.google.com/document/d/14DlqLjbtiFZ98HegWcrUIzvBzPemfOu-miEHeBqpDJY/edit for installation instructions.
 
