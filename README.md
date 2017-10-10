@@ -2,7 +2,27 @@
 
 Note: this is a modification of Microsoft's LightLDA implementation to support warm-start. Everything is the same, except for the initialization code in src/lightlda.cpp: if the command-line flag "warm_start" was set, we generate each token's topic probability distribution from the model and doc-topic files, instead of initializing each token's topic randomly.
 
-See https://github.com/Microsoft/multiverso/wiki/LightLDA and the bottom of https://docs.google.com/document/d/14DlqLjbtiFZ98HegWcrUIzvBzPemfOu-miEHeBqpDJY/edit for installation instructions.
+# Installation instructions
+
+See https://github.com/Microsoft/multiverso/wiki/LightLDA for more information.
+
+Download:
+
+``` git clone --recursive https://github.com/joshuafan/lightlda-warm-start ```
+
+Installation (Linux):
+
+``` sh ./build.sh ```
+
+You may also need to take these steps if something doesn’t work:
+
+* in ```~/.bashrc```, add location of libzmq.so.5 (multiverso/third_party/lib) to LD_LIBRARY_PATH, as follows:
+
+```export LD_LIBRARY_PATH=/home/joshua/lightlda/multiverso/third_party/lib```
+
+* increase RAM for lightlda (1 GB is not enough)
+
+Additionally, a Python wrapper is available in python/lightlda_utils.py. 
 
 Official documentation below.
 
