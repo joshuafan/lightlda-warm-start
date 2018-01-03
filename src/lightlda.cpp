@@ -183,7 +183,7 @@ namespace multiverso { namespace lightlda
                             {
                                 doc->SetTopic(cursor, rng.rand_k(Config::num_topics));
                             }
-			                else {
+                            else {
                                 int32_t word = doc->Word(cursor);
                                 std::vector<double> topic_probs;
                                 // Use doc-topic and word-topic probabilities to calculate the
@@ -201,7 +201,7 @@ namespace multiverso { namespace lightlda
                                 {
                                     topic_probs[t] = topic_probs[t] / sum;
                                 }
-				                // Sample the word's topic from its topic distribution
+                                // Sample the word's topic from its topic distribution
                                 std::discrete_distribution<> d(topic_probs.begin(), topic_probs.end());
                                 int topic = d(gen);
                                 doc->SetTopic(cursor, topic);
