@@ -2,6 +2,11 @@
 
 Note: this is a modification of Microsoft's LightLDA implementation to support warm-start. Everything is the same, except for the initialization code in src/lightlda.cpp: if the command-line flag "warm_start" was set, we generate each token's topic probability distribution from the model and doc-topic files, instead of initializing each token's topic randomly.
 
+The initial topic assignments are sampled from the topic probability distribution P(topic | word, doc), which is proportional to  P(topic | doc) * P(word | topic), under LDA's assumption that the word is conditionally independent of the document, given the topic.
+
+![Probability derivation](derivation.PNG)
+
+
 # Installation instructions
 
 See https://github.com/Microsoft/multiverso/wiki/LightLDA for more information.
