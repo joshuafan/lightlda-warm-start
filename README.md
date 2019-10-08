@@ -29,8 +29,10 @@ You may also need to take these steps if something doesn’t work:
 
 Additionally, a Python wrapper is available in python/lightlda_utils.py. 
 
-Official documentation below.
 
+-------------------------------------------------------------
+
+Official documentation:
 
 # LightLDA
 
